@@ -1,60 +1,42 @@
 package org.main
 
-import java.awt.BorderLayout.*
+import org.game.*
+import org.player.PlayerRepository
 import java.awt.*
+import java.awt.BorderLayout.*
 import java.io.*
 import javax.imageio.ImageIO
+import javax.sound.sampled.AudioSystem
 import javax.swing.*
 import javax.swing.border.EmptyBorder
-import javax.sound.sampled.AudioSystem
 import kotlin.concurrent.thread
 import kotlin.system.exitProcess
-import org.game.*
-import org.player.PlayerBase
 
 /**
- * org.Main part of program
+ * Main part of program
  * (all widgets and actions)
  */
 
 object Program {
+    internal var playing = false
+
     private val gameBt = JButton("Game").apply {
         addActionListener {
-            object : JFrame() {
-                private var textName = JTextField(15)
-                private val buttonOK = JButton("OK").also { bt ->
-                    bt.addActionListener { e ->
-                        if (e?.source === bt) {
-                            textName.text.trim().let {
-                                JOptionPane.showMessageDialog(
-                                    this,
-                                    "Good luck, $it!",
-                                    "Greetings",
-                                    JOptionPane.INFORMATION_MESSAGE
-                                )
+            val name = JTextField(15)
+            val password = JTextField(15)
 
-                                isVisible = false
-                                GameTypeChooser(it)
-                            }
-                        }
-                    }
-                }
-
-                init {
-                    bounds = Rectangle(800, 500, 325, 100)
-                    title = "Who Are You?"
-
-                    add(
-                        JPanel().also { panel ->
-                            panel.add(JLabel("Enter your name: "))
-                            panel.add(textName)
-                            panel.add(buttonOK)
-                        }
-                    )
-
-                    isVisible = true
-                }
-            }
+            if (JOptionPane.showConfirmDialog(
+                    null,
+                    arrayOf(
+                        JLabel("Name"),
+                        name,
+                        JLabel("Login"),
+                        password
+                    ),
+                    "Sing In",
+                    JOptionPane.OK_CANCEL_OPTION
+                ) == JOptionPane.OK_OPTION
+            ) Game.chooseGameType(name.text, password.text)
         }
     }
 
@@ -68,22 +50,22 @@ object Program {
                     add(
                         JScrollPane(
                             JTable(
-                                PlayerBase.players.map {
-                                    it.value.PlayerData().let { data ->
+                                PlayerRepository.all.map {
+                                    it.Data().let { data ->
                                         arrayOf(
-                                            data.playerName,
-                                            data.playerEasyVictories,
-                                            data.playerEasyGames,
-                                            data.playerEasyPercent,
-                                            data.playerMediumVictories,
-                                            data.playerMediumGames,
-                                            data.playerMediumVictories,
-                                            data.playerHardVictories,
-                                            data.playerHardGames,
-                                            data.playerHardPercent,
-                                            data.playerVictories,
-                                            data.playerGames,
-                                            data.playerPercent
+                                            data.name,
+                                            data.easyVictories,
+                                            data.easyGames,
+                                            data.easyPercent,
+                                            data.mediumVictories,
+                                            data.mediumGames,
+                                            data.mediumPercent,
+                                            data.hardVictories,
+                                            data.hardGames,
+                                            data.hardPercent,
+                                            data.victories,
+                                            data.games,
+                                            data.percent
                                         )
                                     }
                                 }.toTypedArray(),
@@ -179,20 +161,19 @@ object Program {
     /** Start of program */
 
     fun start() {
-        PlayerBase.load()
         frame.isVisible = true
 
         thread {
-            while (true) {
+            while (frame.isVisible) {
                 AudioSystem.getClip().run {
                     open(
                         AudioSystem.getAudioInputStream(
-                            File("src/main/resources/utils/Throwing Your Life Away(Instrumental) - Michael Jackson.wav")
+                            File("src/main/resources/utils/Alexei Zakharov - Transcendental (Bonus Track).wav")
                                 .absoluteFile
                         )
                     )
                     start()
-                    Thread.sleep(243000)
+                    Thread.sleep(334000)
                 }
             }
         }

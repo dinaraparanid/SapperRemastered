@@ -12,9 +12,11 @@ buildscript {
     }
 }
 
+val arrowVersion by extra { "0.13.1" }
+
 plugins {
     kotlin("jvm") version "1.4.30"
-    kotlin("plugin.serialization") version "1.4.30"
+    kotlin("kapt") version "1.4.32"
     application
 }
 
@@ -31,10 +33,13 @@ repositories {
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.1.0")
+    implementation ("org.xerial:sqlite-jdbc:3.34.0")
+    implementation("io.arrow-kt:arrow-optics:$arrowVersion")
+    kapt("io.arrow-kt:arrow-meta:$arrowVersion")
     testImplementation(kotlin("test-junit5"))
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 tasks.test {
@@ -50,9 +55,19 @@ tasks.withType<Jar> {
         attributes("Main-Class" to "org.main.MainKt")
     }
 
-    from(configurations.compileClasspath.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } })
+    from(configurations.compile.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } })
 }
 
 application {
     mainClassName = "org.main.MainKt"
+}
+
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+    jvmTarget = "1.8"
+}
+
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+    jvmTarget = "1.8"
 }

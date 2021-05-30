@@ -282,7 +282,6 @@ internal class Game(
         override fun mouseExited(e: MouseEvent?) = Unit
     }
 
-    @JvmName("start")
     fun start() {
         Program.playing = true
 

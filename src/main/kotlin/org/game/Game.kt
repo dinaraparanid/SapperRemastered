@@ -27,7 +27,7 @@ internal class Game(
     private val y: Int,
     private val mines: Int,
     private val name: String,
-    private val password: String,
+    password: String,
     private val gameType: GameType
 ) {
 
@@ -81,8 +81,17 @@ internal class Game(
     private val player = PlayerRepository.getByName(name).orNull() ?: PlayerRepository.add(name, password)
     private var minesLeft = mines
     private var cellsLeft = x * y - mines
-    private val status = JLabel("Mines left: $minesLeft")
-    private val timer = JLabel("Time: 0")
+
+    private val status = JLabel("Mines left: $minesLeft").apply {
+        font = Font(Font.SANS_SERIF, Font.BOLD, 25)
+        foreground = Color.BLACK
+    }
+
+    private val timer = JLabel("Time: 0").apply {
+        font = Font(Font.SANS_SERIF, Font.BOLD, 25)
+        foreground = Color.BLACK
+    }
+
     private val bts = Array(x) { Array(y) { arrayOf(JButton(), false, false) } }
 
     private val mineTable = Array(x) { BooleanArray(y) }.also {
@@ -97,19 +106,38 @@ internal class Game(
     )
 
     private val numberTable = Array(x) { IntArray(y) }.also {
-        mineTable.forEachIndexed { xc, row ->
-            row.forEachIndexed { yc, cell ->
-                if (cell) {
-                    if (xc > 0) it[xc - 1][yc]++
-                    if (xc < x - 1) it[xc + 1][yc]++
-                    if (yc > 0) it[xc][yc - 1]++
-                    if (yc < y - 1) it[xc][yc + 1]++
-                    if (xc > 0 && yc > 0) it[xc - 1][yc - 1]++
-                    if (xc > 0 && yc < y - 1) it[xc - 1][yc + 1]++
-                    if (xc < x - 1 && yc > 0) it[xc + 1][yc - 1]++
-                    if (xc < x - 1 && yc < y - 1) it[xc + 1][yc + 1]++
+
+        // 10 threads for initializing number table
+
+        val d = x * y / 10
+        val numsInThreads = Array(10) { d }
+        val ost = x * y % 10
+        (0 until ost).forEach { i -> numsInThreads[i]++ }
+
+        var cur = 0
+
+        (0 until 10).forEach { i ->
+            val finalCur = cur
+
+            thread {
+                (finalCur until finalCur + numsInThreads[i]).forEach { t ->
+                    val xc = t / y
+                    val yc = t % y
+
+                    if (mineTable[xc][yc]) {
+                        if (xc > 0) it[xc - 1][yc]++
+                        if (xc < x - 1) it[xc + 1][yc]++
+                        if (yc > 0) it[xc][yc - 1]++
+                        if (yc < y - 1) it[xc][yc + 1]++
+                        if (xc > 0 && yc > 0) it[xc - 1][yc - 1]++
+                        if (xc > 0 && yc < y - 1) it[xc - 1][yc + 1]++
+                        if (xc < x - 1 && yc > 0) it[xc + 1][yc - 1]++
+                        if (xc < x - 1 && yc < y - 1) it[xc + 1][yc + 1]++
+                    }
                 }
             }
+
+            cur += numsInThreads[i]
         }
     }
 
@@ -128,6 +156,8 @@ internal class Game(
         private val yc: Int
     ) : MouseListener {
         private lateinit var numImages: Array<BufferedImage?>
+        private lateinit var mineImage: BufferedImage
+        private lateinit var flagImage: BufferedImage
         private val zeroes = ArrayDeque<Pair<Int, Int>>()
 
         private fun open(xcc: Int, ycc: Int) {
@@ -145,32 +175,44 @@ internal class Game(
         }
 
         override fun mouseReleased(e: MouseEvent?) {
-            val mineImage = getScaledImage(
-                ImageIO.read(
-                    File("src/main/resources/utils/mine.png")
-                ),
-                bt.width,
-                bt.height
-            )
-
-            val flagImage = getScaledImage(
-                ImageIO.read(
-                    File("src/main/resources/utils/flag.png")
-                ),
-                bt.width,
-                bt.height
-            )
-
             if (e?.source === bt) {
                 when {
                     isLeftMouseButton(e) -> {
                         when {
                             mineTable[xc][yc] -> {
-                                bts.forEachIndexed { xc2, row2 ->
-                                    row2.forEachIndexed { yc2, (cell, _) ->
-                                        if (mineTable[xc2][yc2]) (cell as JButton).icon =
-                                            ImageIcon(mineImage)
+                                mineImage = getScaledImage(
+                                    ImageIO.read(
+                                        File("src/main/resources/utils/mine.png")
+                                    ),
+                                    bt.width,
+                                    bt.height
+                                )
+
+                                // 10 threads for initializing icon
+                                // of mines when player is lost
+
+                                val d = x * y / 10
+                                val numsInThreads = Array(10) { d }
+                                val ost = x * y % 10
+                                (0 until ost).forEach { numsInThreads[it]++ }
+
+                                var cur = 0
+
+                                (0 until 10).forEach { i ->
+                                    val finalCur = cur
+
+                                    thread {
+                                        (finalCur until finalCur + numsInThreads[i]).forEach { t ->
+                                            val xc2 = t / y
+                                            val yc2 = t % y
+
+                                            if (mineTable[xc2][yc2])
+                                                (bts[xc2][yc2].first() as JButton).icon =
+                                                    ImageIcon(mineImage)
+                                        }
                                     }
+
+                                    cur += numsInThreads[i]
                                 }
 
                                 AudioSystem.getClip().run {
@@ -183,6 +225,8 @@ internal class Game(
                                     start()
                                 }
 
+                                Program.playing = false
+
                                 JOptionPane.showMessageDialog(
                                     frame,
                                     "You've exploded :(",
@@ -191,11 +235,10 @@ internal class Game(
                                 )
 
                                 frame.isVisible = false
-                                Program.playing = false
                                 PlayerRepository.update(player)
                             }
 
-                            else -> {
+                            else -> if (bt.icon == null) {
                                 numImages = Array<BufferedImage?>(9) { null }.also {
                                     (0..8).forEach { ind ->
                                         it[ind] = getScaledImage(
@@ -239,6 +282,8 @@ internal class Game(
                                 }
 
                                 if (cellsLeft == 0) {
+                                    Program.playing = false
+
                                     JOptionPane.showMessageDialog(
                                         frame,
                                         "You've survived!",
@@ -249,28 +294,37 @@ internal class Game(
                                     player.won(gameType)
                                     PlayerRepository.update(player)
                                     frame.isVisible = false
-                                    Program.playing = false
                                 }
                             }
                         }
                     }
 
                     isMiddleMouseButton(e) -> {
-                        when {
-                            bts[xc][yc][2] as Boolean -> {
-                                bt.icon = null
-                                bts[xc][yc][2] = false
-                                minesLeft++
+                        if (minesLeft != 0) {
+                            flagImage = getScaledImage(
+                                ImageIO.read(
+                                    File("src/main/resources/utils/flag.png")
+                                ),
+                                bt.width,
+                                bt.height
+                            )
+
+                            when {
+                                bts[xc][yc][2] as Boolean -> {
+                                    bt.icon = null
+                                    bts[xc][yc][2] = false
+                                    minesLeft++
+                                }
+
+                                else -> {
+                                    bt.icon = ImageIcon(flagImage)
+                                    bts[xc][yc][2] = true
+                                    minesLeft = maxOf(minesLeft - 1, 0)
+                                }
                             }
 
-                            else -> {
-                                bt.icon = ImageIcon(flagImage)
-                                bts[xc][yc][2] = true
-                                minesLeft = maxOf(minesLeft - 1, 0)
-                            }
+                            status.text = "Mines left: $minesLeft"
                         }
-
-                        status.text = "Mines left: $minesLeft"
                     }
                 }
             }
@@ -286,12 +340,14 @@ internal class Game(
         Program.playing = true
 
         player.startPlaying(gameType)
+        PlayerRepository.update(player)
 
         bts.forEachIndexed { xc, row ->
             row.forEachIndexed { yc, triple ->
                 triple.let { (bt) ->
                     grid.add(bt as JButton)
                     bt.addMouseListener(MouseClickListener(bt, xc, yc))
+                    bt.background = Color(0, 162, 232)
                 }
             }
         }
@@ -309,18 +365,21 @@ internal class Game(
             }
 
             isVisible = true
+            background = Color.BLUE
+            isAlwaysOnTop = true
+            isFocusable = true
 
             var start = 0
 
             thread {
-                while (isVisible) {
+                while (Program.playing) {
                     Thread.sleep(1000)
                     timer.text = "Time: ${start++}"
                 }
             }
 
             thread {
-                while (isVisible) Unit
+                while (isVisible) print("")
                 Program.playing = false
             }
         }

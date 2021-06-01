@@ -21,12 +21,13 @@ internal object PlayerRepository {
             "SET name = ?, password = ?, " +
             "easy_games = ?, easy_vic = ?, " +
             "medium_games = ?, medium_vic = ?, " +
-            "hard_games = ?, hard_vic = ? " +
+            "hard_games = ?, hard_vic = ?, " +
+            "opened_cells = ?" +
             "WHERE name = ?"
 
     private const val addSQL = "INSERT INTO Players " +
-            "(name, password, easy_games, easy_vic, medium_games, medium_vic, hard_games, hard_vic) " +
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            "(name, password, easy_games, easy_vic, medium_games, medium_vic, hard_games, hard_vic, opened_cells) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 
     private val connection: Connection = SQLiteDataSource()
         .apply {
@@ -58,6 +59,7 @@ internal object PlayerRepository {
                                 res.getInt("medium_vic"),
                                 res.getInt("hard_games"),
                                 res.getInt("hard_vic"),
+                                res.getLong("opened_cells")
                             )
                         )
                     }
@@ -87,6 +89,7 @@ internal object PlayerRepository {
                             res.getInt("medium_vic"),
                             res.getInt("hard_games"),
                             res.getInt("hard_vic"),
+                            res.getLong("opened_cells")
                         )
                     )
 
@@ -106,15 +109,18 @@ internal object PlayerRepository {
     fun update(player: Player, oldName: String = player.Data().name) = connection
         .prepareStatement(updateSQL)
         .apply {
-            setString(1, player.Data().name)
-            setString(2, player.Data().password)
-            setInt(3, player.Data().easyGames)
-            setInt(4, player.Data().easyVictories)
-            setInt(5, player.Data().mediumGames)
-            setInt(6, player.Data().mediumVictories)
-            setInt(7, player.Data().hardGames)
-            setInt(8, player.Data().hardVictories)
-            setString(9, oldName)
+            player.Data().let { data ->
+                setString(1, data.name)
+                setString(2, data.password)
+                setInt(3, data.easyGames)
+                setInt(4, data.easyVictories)
+                setInt(5, data.mediumGames)
+                setInt(6, data.mediumVictories)
+                setInt(7, data.hardGames)
+                setInt(8, data.hardVictories)
+                setLong(9, data.openedCells)
+                setString(10, oldName)
+            }
         }
         .use(PreparedStatement::execute)
 
@@ -136,6 +142,7 @@ internal object PlayerRepository {
             setInt(6, 0)
             setInt(7, 0)
             setInt(8, 0)
+            setLong(9, 0)
         }
         .use(PreparedStatement::execute)
         .run { Player(name, password) }

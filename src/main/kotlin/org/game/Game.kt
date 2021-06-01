@@ -41,7 +41,7 @@ internal class Game(
          * @return scaled image
          */
 
-        private fun getScaledImage(srcImg: Image, w: Int, h: Int) =
+        internal fun getScaledImage(srcImg: Image, w: Int, h: Int) =
             BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB).also {
                 it.createGraphics().apply {
                     setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
@@ -76,13 +76,21 @@ internal class Game(
         bounds = Rectangle(500, 200, 800, 800)
         isAlwaysOnTop = true
         isFocusable = true
+
+        iconImage = ImageIcon(
+            getScaledImage(
+                ImageIO.read(File("src/main/resources/utils/mine.png")),
+                200,
+                200
+            )
+        ).image
     }
 
     private val player = PlayerRepository.getByName(name).orNull() ?: PlayerRepository.add(name, password)
     private var minesLeft = mines
     private var cellsLeft = x * y - mines
 
-    private val status = JLabel("Mines left: $minesLeft").apply {
+    private val status = JLabel("$minesLeft").apply {
         font = Font(Font.SANS_SERIF, Font.BOLD, 25)
         foreground = Color.BLACK
     }
@@ -157,11 +165,13 @@ internal class Game(
     ) : MouseListener {
         private lateinit var numImages: Array<BufferedImage?>
         private lateinit var mineImage: BufferedImage
-        private lateinit var flagImage: BufferedImage
+
         private val zeroes = ArrayDeque<Pair<Int, Int>>()
 
         private fun open(xcc: Int, ycc: Int) {
             if (!(bts[xcc][ycc][1] as Boolean)) {
+                player.openCell()
+
                 (bts[xcc][ycc][0] as JButton).icon =
                     ImageIcon(numImages[numberTable[xcc][ycc]])
 
@@ -175,6 +185,14 @@ internal class Game(
         }
 
         override fun mouseReleased(e: MouseEvent?) {
+            val flagImage = getScaledImage(
+                ImageIO.read(
+                    File("src/main/resources/utils/flag.png")
+                ),
+                bt.width,
+                bt.height
+            )
+
             if (e?.source === bt) {
                 when {
                     isLeftMouseButton(e) -> {
@@ -235,10 +253,10 @@ internal class Game(
                                 )
 
                                 frame.isVisible = false
-                                PlayerRepository.update(player)
+                                thread { PlayerRepository.update(player) }
                             }
 
-                            else -> if (bt.icon == null) {
+                            else -> if (bt.icon == null || bt.icon == flagImage) {
                                 numImages = Array<BufferedImage?>(9) { null }.also {
                                     (0..8).forEach { ind ->
                                         it[ind] = getScaledImage(
@@ -251,6 +269,7 @@ internal class Game(
                                     }
                                 }
 
+                                player.openCell()
                                 bt.icon = ImageIcon(numImages[numberTable[xc][yc]])
 
                                 if (bts[xc][yc][1] is Boolean)
@@ -292,23 +311,16 @@ internal class Game(
                                     )
 
                                     player.won(gameType)
-                                    PlayerRepository.update(player)
                                     frame.isVisible = false
                                 }
+
+                                thread { PlayerRepository.update(player) }
                             }
                         }
                     }
 
                     isMiddleMouseButton(e) -> {
                         if (minesLeft != 0) {
-                            flagImage = getScaledImage(
-                                ImageIO.read(
-                                    File("src/main/resources/utils/flag.png")
-                                ),
-                                bt.width,
-                                bt.height
-                            )
-
                             when {
                                 bts[xc][yc][2] as Boolean -> {
                                     bt.icon = null
@@ -323,7 +335,7 @@ internal class Game(
                                 }
                             }
 
-                            status.text = "Mines left: $minesLeft"
+                            status.text = "$minesLeft"
                         }
                     }
                 }
@@ -340,7 +352,7 @@ internal class Game(
         Program.playing = true
 
         player.startPlaying(gameType)
-        PlayerRepository.update(player)
+        thread { PlayerRepository.update(player) }
 
         bts.forEachIndexed { xc, row ->
             row.forEachIndexed { yc, triple ->
@@ -357,7 +369,19 @@ internal class Game(
                 it.layout = BorderLayout()
 
                 it.add(BorderLayout.NORTH, JPanel().apply {
+                    add(
+                        JLabel(
+                            ImageIcon(
+                                getScaledImage(
+                                    ImageIO.read(File("src/main/resources/utils/mine.png")),
+                                    50,
+                                    50
+                                )
+                            )
+                        )
+                    )
                     add(status)
+                    add(Box.createHorizontalStrut(200))
                     add(timer)
                 })
 
@@ -374,7 +398,7 @@ internal class Game(
             thread {
                 while (Program.playing) {
                     Thread.sleep(1000)
-                    timer.text = "Time: ${start++}"
+                    timer.text = "Time: ${++start}"
                 }
             }
 

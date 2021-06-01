@@ -1,9 +1,12 @@
 package org.main
 
+import org.game.Game
 import org.game.Game.Companion.chooseGameType
 import org.player.Player
 import org.player.PlayerRepository
 import java.awt.*
+import java.io.File
+import javax.imageio.ImageIO
 import javax.swing.*
 import kotlin.system.exitProcess
 
@@ -22,7 +25,8 @@ internal class MainMenu {
                 val name = JTextField(15)
                 val password = JPasswordField(15)
                 if (JOptionPane.showConfirmDialog(
-                        null, arrayOf<Any>(
+                        null,
+                        arrayOf(
                             JLabel("Name"),
                             name,
                             JLabel("Login"),
@@ -48,6 +52,14 @@ internal class MainMenu {
                     bounds = Rectangle(300, 300, 900, 500)
                     title = "Results"
 
+                    iconImage = ImageIcon(
+                        Game.getScaledImage(
+                            ImageIO.read(File("src/main/resources/utils/mine.png")),
+                            200,
+                            200
+                        )
+                    ).image
+
                     add(
                         JScrollPane(
                             JTable(
@@ -57,33 +69,35 @@ internal class MainMenu {
                                             data.name,
                                             data.easyVictories,
                                             data.easyGames,
-                                            String.format("%.2f", data.easyPercent),
+                                            String.format("%.2f", data.easyVictoryPercent),
                                             data.mediumVictories,
                                             data.mediumGames,
-                                            String.format("%.2f", data.mediumPercent),
+                                            String.format("%.2f", data.mediumVictoryPercent),
                                             data.hardVictories,
                                             data.hardGames,
-                                            String.format("%.2f", data.hardPercent),
+                                            String.format("%.2f", data.hardVictoryPercent),
                                             data.victories,
                                             data.games,
-                                            String.format("%.2f", data.percent)
+                                            String.format("%.2f", data.victoryPercent),
+                                            data.openedCells
                                         )
                                     }
                                 }.toTypedArray(),
                                 arrayOf(
                                     "Name",
-                                    "Vic on Easy",
-                                    "Games on Easy",
+                                    "Easy vic",
+                                    "Easy games",
                                     "Easy vic %",
-                                    "Vic on Medium",
-                                    "Games on Medium",
+                                    "Medium vic",
+                                    "Medium games",
                                     "Medium vic %",
-                                    "Vic on Hard",
-                                    "Games on Hard",
+                                    "Hard vic",
+                                    "Hard games",
                                     "Hard vic %",
                                     "Victories",
                                     "Games",
-                                    "Victory %"
+                                    "Victory %",
+                                    "Opened cells"
                                 )
                             ).apply {
                                 rowHeight = 50
@@ -110,6 +124,14 @@ internal class MainMenu {
             if (!Program.playing) {
                 JFrame("Help").also { frame ->
                     frame.bounds = Rectangle(300, 300, 600, 400)
+
+                    frame.iconImage = ImageIcon(
+                        Game.getScaledImage(
+                            ImageIO.read(File("src/main/resources/utils/mine.png")),
+                            200,
+                            200
+                        )
+                    ).image
 
                     frame.add(
                         JTextArea(

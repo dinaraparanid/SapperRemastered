@@ -1,5 +1,6 @@
 package org.main
 
+import org.game.Game
 import java.awt.*
 import java.awt.BorderLayout.*
 import java.io.*
@@ -19,6 +20,14 @@ object Program {
     private val frame = JFrame("SAPPER Remastered").also { frame ->
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
         frame.bounds = Rectangle(0, 0, 1920, 1080)
+
+        frame.iconImage = ImageIcon(
+            Game.getScaledImage(
+                ImageIO.read(File("src/main/resources/utils/mine.png")),
+                200,
+                200
+            )
+        ).image
 
         frame.contentPane.add(
             object : JPanel() {

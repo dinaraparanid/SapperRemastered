@@ -22,11 +22,10 @@ plugins {
 
 apply {
     plugin("kotlin")
-    plugin("kotlinx-serialization")
 }
 
 group = "me.arseny"
-version = "1.0-SNAPSHOT"
+version = "V 1.0"
 
 repositories {
     mavenCentral()

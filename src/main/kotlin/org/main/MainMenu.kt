@@ -1,5 +1,7 @@
 package org.main
 
+import arrow.core.None
+import arrow.core.Some
 import org.game.Game
 import org.game.Game.Companion.chooseGameType
 import org.player.Player
@@ -35,7 +37,21 @@ internal class MainMenu {
                         "Sing In",
                         JOptionPane.OK_CANCEL_OPTION
                     ) == JOptionPane.OK_OPTION
-                ) chooseGameType(name.text, password.password.toString())
+                ) PlayerRepository.getByName(name.text).let {
+                    when (it) {
+                        None -> chooseGameType(name.text, password.password.toString())
+                        is Some -> when (it.value.Data().password) {
+                            password.password.toString() -> chooseGameType(name.text, password.password.toString())
+
+                            else -> JOptionPane.showMessageDialog(
+                                null,
+                                "Wrong Login or Password",
+                                "Authorization failed",
+                                JOptionPane.ERROR_MESSAGE
+                            )
+                        }
+                    }
+                }
             }
         }
     }

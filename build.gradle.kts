@@ -25,7 +25,7 @@ apply {
 }
 
 group = "me.arseny"
-version = "V 1.0"
+version = "V1.0.1"
 
 repositories {
     mavenCentral()

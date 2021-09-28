@@ -23,9 +23,10 @@ internal class MainMenu {
         foreground = Color.YELLOW
 
         addActionListener {
-            if (!Program.playing) {
+            if (!Program.isPlaying) {
                 val name = JTextField(15)
                 val password = JPasswordField(15)
+
                 if (JOptionPane.showConfirmDialog(
                         null,
                         arrayOf(
@@ -39,16 +40,20 @@ internal class MainMenu {
                     ) == JOptionPane.OK_OPTION
                 ) PlayerRepository.getByName(name.text).let {
                     when (it) {
-                        None -> chooseGameType(name.text, password.password.toString())
+                        None -> chooseGameType(name.text, password.text)
                         is Some -> when (it.value.Data().password) {
-                            password.password.toString() -> chooseGameType(name.text, password.password.toString())
+                            password.text -> chooseGameType(name.text, password.text)
 
-                            else -> JOptionPane.showMessageDialog(
-                                null,
-                                "Wrong Login or Password",
-                                "Authorization failed",
-                                JOptionPane.ERROR_MESSAGE
-                            )
+                            else -> {
+                                println("Cur password: ${password.text}")
+
+                                JOptionPane.showMessageDialog(
+                                    null,
+                                    "Wrong Login or Password",
+                                    "Authorization failed",
+                                    JOptionPane.ERROR_MESSAGE
+                                )
+                            }
                         }
                     }
                 }
@@ -62,7 +67,7 @@ internal class MainMenu {
         foreground = Color.YELLOW
 
         addActionListener {
-            if (!Program.playing) {
+            if (!Program.isPlaying) {
                 JFrame().apply {
                     contentPane.background = Color.YELLOW
                     bounds = Rectangle(300, 300, 900, 500)
@@ -137,7 +142,7 @@ internal class MainMenu {
         font = Font(Font.SANS_SERIF, Font.BOLD, 25)
         foreground = Color.YELLOW
         addActionListener {
-            if (!Program.playing) {
+            if (!Program.isPlaying) {
                 JFrame("Help").also { frame ->
                     frame.bounds = Rectangle(300, 300, 600, 400)
 
@@ -190,7 +195,7 @@ internal class MainMenu {
         background = Color.DARK_GRAY
         font = Font(Font.SANS_SERIF, Font.BOLD, 25)
         foreground = Color.YELLOW
-        addActionListener { if (!Program.playing) exitProcess(0) }
+        addActionListener { if (!Program.isPlaying) exitProcess(0) }
     }
 
     private val constraint = GridBagConstraints().apply { ipadx = 200 }

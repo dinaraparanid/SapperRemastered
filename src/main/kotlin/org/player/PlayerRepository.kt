@@ -40,9 +40,7 @@ internal object PlayerRepository {
         }
         .connection
 
-    /**
-     * @return all players
-     */
+    /** @return all players */
 
     val all: List<Player>
         get() = connection.createStatement().use { stm ->

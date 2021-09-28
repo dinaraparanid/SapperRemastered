@@ -65,7 +65,7 @@ internal class Player(
      *  @return percent of victory on easy level
      */
 
-    private val easyVictoryPercent: Double
+    private inline val easyVictoryPercent
         get() = if (easyGames == 0) 0.0 else 100.0 * easyVictories / easyGames
 
     /**
@@ -73,7 +73,7 @@ internal class Player(
      *  @return percent of victory on medium level
      */
 
-    private val mediumVictoryPercent: Double
+    private inline val mediumVictoryPercent
         get() = if (mediumGames == 0) 0.0 else 100.0 * mediumVictories / mediumGames
 
     /**
@@ -81,7 +81,7 @@ internal class Player(
      *  @return percent of victory on hard level
      */
 
-    private val hardVictoryPercent: Double
+    private inline val hardVictoryPercent
         get() = if (hardGames == 0) 0.0 else 100.0 * hardVictories / hardGames
 
     /**
@@ -89,7 +89,7 @@ internal class Player(
      *  @return percent of victory for all games
      */
 
-    private val victoryPercent: Double
+    private inline val victoryPercent
         get() = if (games == 0) 0.0 else 100.0 * victories / games
 
     inner class Data {

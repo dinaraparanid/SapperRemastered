@@ -15,7 +15,7 @@ import kotlin.concurrent.thread
  */
 
 object Program {
-    internal var playing = false
+    internal var isPlaying = false
 
     private val frame = JFrame("SAPPER Remastered").also { frame ->
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
@@ -51,7 +51,7 @@ object Program {
         frame.isVisible = true
 
         thread {
-            while (frame.isVisible) {
+            while (frame.isVisible)
                 AudioSystem.getClip().run {
                     open(
                         AudioSystem.getAudioInputStream(
@@ -62,7 +62,6 @@ object Program {
                     start()
                     Thread.sleep(334000)
                 }
-            }
         }
     }
 }

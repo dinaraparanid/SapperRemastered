@@ -7,14 +7,15 @@ import javax.swing.JOptionPane
  */
 
 internal class Easy : GameType {
-    companion object {
+    internal companion object {
 
         /**
          * 8 x 8, 16 mines
          * @param name name of player
          */
 
-        fun start(name: String, password: String) {
+        @JvmStatic
+        internal fun start(name: String, password: String) {
             JOptionPane.showMessageDialog(
                 null,
                 "Good luck, $name!",

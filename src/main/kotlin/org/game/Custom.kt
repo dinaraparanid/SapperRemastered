@@ -10,12 +10,13 @@ import javax.swing.JTextField
  * custom level
  */
 
-class Custom private constructor() : GameType {
+internal class Custom private constructor() : GameType {
     val width = JTextField(15)
     val height = JTextField(15)
     val mines = JTextField(15)
 
-    companion object {
+    internal companion object {
+        @JvmStatic
         private fun parse(textField: JTextField) = textField.text.let { text ->
             when {
                 text != null -> {
@@ -44,6 +45,7 @@ class Custom private constructor() : GameType {
             }
         }
 
+        @JvmStatic
         private fun check(xc: Int, yc: Int, m: Int, name: String, password: String) = when {
             xc <= 0 || yc <= 0 -> JOptionPane.showMessageDialog(
                 null,
@@ -83,7 +85,8 @@ class Custom private constructor() : GameType {
          * @param name name of player
          */
 
-        fun start(name: String, password: String) {
+        @JvmStatic
+        internal fun start(name: String, password: String) {
             val game = Custom()
 
             if (

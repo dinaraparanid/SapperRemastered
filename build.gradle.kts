@@ -12,8 +12,6 @@ buildscript {
     }
 }
 
-val arrowVersion by extra { "0.13.1" }
-
 plugins {
     kotlin("jvm") version "1.4.30"
     kotlin("kapt") version "1.4.32"
@@ -25,20 +23,21 @@ apply {
 }
 
 group = "me.arseny"
-version = "V1.0.1"
+version = "V1.0.2"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation ("org.xerial:sqlite-jdbc:3.34.0")
-    implementation("io.arrow-kt:arrow-optics:$arrowVersion")
-    kapt("io.arrow-kt:arrow-meta:$arrowVersion")
+    implementation ("org.xerial:sqlite-jdbc:3.36.0.2")
+    implementation("io.arrow-kt:arrow-optics:0.13.1")
+    kapt("io.arrow-kt:arrow-meta:0.13.1")
     testImplementation(kotlin("test-junit5"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.6.0")
+    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.0")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.0")
     implementation(kotlin("stdlib-jdk8"))
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
 }
 
 tasks.test {
@@ -64,6 +63,7 @@ application {
 val compileKotlin: KotlinCompile by tasks
 compileKotlin.kotlinOptions {
     jvmTarget = "1.8"
+    languageVersion = "1.5"
 }
 
 val compileTestKotlin: KotlinCompile by tasks

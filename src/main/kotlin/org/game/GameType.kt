@@ -1,3 +1,3 @@
 package org.game
 
-internal interface GameType
+internal sealed interface GameType

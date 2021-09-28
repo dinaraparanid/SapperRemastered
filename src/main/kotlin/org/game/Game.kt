@@ -10,6 +10,7 @@ import javax.swing.*
 import javax.swing.SwingUtilities.*
 import org.main.Program
 import org.player.PlayerRepository
+import java.util.concurrent.Executors
 import kotlin.concurrent.thread
 
 /**
@@ -31,7 +32,7 @@ internal class Game(
     private val gameType: GameType
 ) {
 
-    companion object {
+    internal companion object {
 
         /**
          * Gets image of required scale
@@ -41,6 +42,7 @@ internal class Game(
          * @return scaled image
          */
 
+        @JvmStatic
         internal fun getScaledImage(srcImg: Image, w: Int, h: Int) =
             BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB).also {
                 it.createGraphics().apply {
@@ -55,7 +57,8 @@ internal class Game(
          * @param name name of player
          */
 
-        fun chooseGameType(name: String, password: String) = when (JOptionPane.showInputDialog(
+        @JvmStatic
+        internal fun chooseGameType(name: String, password: String) = when (JOptionPane.showInputDialog(
             null,
             "Choose game type:",
             "Game Type",
@@ -71,6 +74,8 @@ internal class Game(
             else -> Custom.start(name, password)
         }
     }
+
+    private val executor = Executors.newFixedThreadPool(10)
 
     private val frame = JFrame("Game").apply {
         bounds = Rectangle(500, 200, 800, 800)
@@ -127,7 +132,7 @@ internal class Game(
         (0 until 10).forEach { i ->
             val finalCur = cur
 
-            thread {
+            executor.execute {
                 (finalCur until finalCur + numsInThreads[i]).forEach { t ->
                     val xc = t / y
                     val yc = t % y
@@ -219,7 +224,7 @@ internal class Game(
                                 (0 until 10).forEach { i ->
                                     val finalCur = cur
 
-                                    thread {
+                                    executor.execute {
                                         (finalCur until finalCur + numsInThreads[i]).forEach { t ->
                                             val xc2 = t / y
                                             val yc2 = t % y
@@ -243,7 +248,7 @@ internal class Game(
                                     start()
                                 }
 
-                                Program.playing = false
+                                Program.isPlaying = false
 
                                 JOptionPane.showMessageDialog(
                                     frame,
@@ -253,7 +258,7 @@ internal class Game(
                                 )
 
                                 frame.isVisible = false
-                                thread { PlayerRepository.update(player) }
+                                executor.execute { PlayerRepository.update(player) }
                             }
 
                             else -> if (bt.icon == null || bt.icon == flagImage) {
@@ -301,7 +306,7 @@ internal class Game(
                                 }
 
                                 if (cellsLeft == 0) {
-                                    Program.playing = false
+                                    Program.isPlaying = false
 
                                     JOptionPane.showMessageDialog(
                                         frame,
@@ -314,12 +319,12 @@ internal class Game(
                                     frame.isVisible = false
                                 }
 
-                                thread { PlayerRepository.update(player) }
+                                executor.execute { PlayerRepository.update(player) }
                             }
                         }
                     }
 
-                    isMiddleMouseButton(e) -> {
+                    isRightMouseButton(e) -> {
                         if (minesLeft != 0) {
                             when {
                                 bts[xc][yc][2] as Boolean -> {
@@ -349,10 +354,10 @@ internal class Game(
     }
 
     fun start() {
-        Program.playing = true
+        Program.isPlaying = true
 
         player.startPlaying(gameType)
-        thread { PlayerRepository.update(player) }
+        executor.execute { PlayerRepository.update(player) }
 
         bts.forEachIndexed { xc, row ->
             row.forEachIndexed { yc, triple ->
@@ -365,6 +370,30 @@ internal class Game(
         }
 
         frame.apply {
+            this.removeWindowListener(object : WindowListener {
+                override fun windowOpened(e: WindowEvent?) {
+                    Program.isPlaying = true
+                    var start = 0
+
+                    thread {
+                        while (Program.isPlaying) {
+                            Thread.sleep(1000)
+                            timer.text = "Time: ${++start}"
+                        }
+                    }
+                }
+
+                override fun windowClosed(e: WindowEvent?) {
+                    Program.isPlaying = false
+                }
+
+                override fun windowActivated(e: WindowEvent?) = Unit
+                override fun windowClosing(e: WindowEvent?) = Unit
+                override fun windowIconified(e: WindowEvent?) = Unit
+                override fun windowDeiconified(e: WindowEvent?) = Unit
+                override fun windowDeactivated(e: WindowEvent?) = Unit
+            })
+
             contentPane.let {
                 it.layout = BorderLayout()
 
@@ -392,20 +421,6 @@ internal class Game(
             background = Color.BLUE
             isAlwaysOnTop = true
             isFocusable = true
-
-            var start = 0
-
-            thread {
-                while (Program.playing) {
-                    Thread.sleep(1000)
-                    timer.text = "Time: ${++start}"
-                }
-            }
-
-            thread {
-                while (isVisible) print("")
-                Program.playing = false
-            }
         }
     }
 }

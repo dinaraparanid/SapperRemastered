@@ -89,8 +89,7 @@ internal class Custom private constructor() : GameType {
         internal fun start(name: String, password: String) {
             val game = Custom()
 
-            if (
-                JOptionPane.showConfirmDialog(
+            if (JOptionPane.showConfirmDialog(
                     null,
                     arrayOf(
                         JLabel("Width"),
@@ -101,8 +100,7 @@ internal class Custom private constructor() : GameType {
                         game.mines
                     ),
                     "Enter game table parameters",
-                    JOptionPane.OK_CANCEL_OPTION
-                ) == JOptionPane.OK_OPTION
+                    JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION
             ) check(
                 parse(game.width).orNull() ?: 0,
                 parse(game.height).orNull() ?: 0,

@@ -24,10 +24,11 @@ than there is one mine in neighbour cells. You can put flags to show that there 
 
 Setup and Run
 --------------------
-Install folder from https://drive.google.com/drive/u/0/folders/1BURuLT0ltabNJtG3fK2Ees01dl7WZq9r. 
-After downloading, go to Sapper.zip file. Extract all files to some folder.
-Then go to name_of_folder/Sapper/bin/Sapper_PC.bat and click on it.
-The game will start.
+```shell
+git clone https://github.com/dinaraparanid/SapperRemastered.git
+cd SapperRemastered
+java -jar Sapper_PC-V1.1.0.jar
+```
 
 Credits
 --------------------

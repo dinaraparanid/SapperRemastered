@@ -1,43 +1,38 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
+plugins {
+    kotlin("jvm") version "1.8.20"
+    kotlin("kapt") version "1.8.20"
+    kotlin("plugin.serialization") version "1.8.20"
+    application
+}
+
 buildscript {
     repositories {
         mavenCentral()
     }
-
-    dependencies {
-        val kotlinVersion = "1.4.30"
-        classpath(kotlin("gradle-plugin", version = kotlinVersion))
-        classpath(kotlin("serialization", version = kotlinVersion))
-    }
-}
-
-plugins {
-    kotlin("jvm") version "1.4.30"
-    kotlin("kapt") version "1.4.32"
-    application
 }
 
 apply {
     plugin("kotlin")
 }
 
-group = "me.arseny"
-version = "V1.0.2"
+group = "com.paranid5"
+version = "V1.1.0"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation ("org.xerial:sqlite-jdbc:3.36.0.2")
-    implementation("io.arrow-kt:arrow-optics:0.13.1")
-    kapt("io.arrow-kt:arrow-meta:0.13.1")
-    testImplementation(kotlin("test-junit5"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.8.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.8.0")
-    implementation(kotlin("stdlib-jdk8"))
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.30")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.1")
+
+    implementation("org.xerial:sqlite-jdbc:3.42.0.0")
+
+    implementation("io.arrow-kt:arrow-optics:1.1.5")
+    kapt("io.arrow-kt:arrow-meta:1.6.2")
 }
 
 tasks.test {
@@ -45,7 +40,7 @@ tasks.test {
 }
 
 tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = "1.8"
+    kotlinOptions.jvmTarget = "17"
 }
 
 tasks.withType<Jar> {
@@ -53,20 +48,20 @@ tasks.withType<Jar> {
         attributes("Main-Class" to "org.main.MainKt")
     }
 
-    from(configurations.compile.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } })
+    from(configurations.implementation.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } })
 }
 
 application {
-    mainClassName = "org.main.MainKt"
+    mainClass.set("com.paranid5.presentation.main.MainKt")
 }
 
 val compileKotlin: KotlinCompile by tasks
-compileKotlin.kotlinOptions {
-    jvmTarget = "1.8"
-    languageVersion = "1.5"
+
+kotlin {
+    jvmToolchain(17)
 }
 
-val compileTestKotlin: KotlinCompile by tasks
-compileTestKotlin.kotlinOptions {
-    jvmTarget = "1.8"
+compileKotlin.kotlinOptions {
+    jvmTarget = "17"
+    languageVersion = "1.8"
 }

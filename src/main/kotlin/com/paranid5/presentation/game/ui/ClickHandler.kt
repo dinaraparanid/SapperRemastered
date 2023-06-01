@@ -1,6 +1,7 @@
 package com.paranid5.presentation.game.ui
 
 import com.paranid5.data.player.Player
+import com.paranid5.data.player.PlayerRepository
 import com.paranid5.presentation.utils.getScaledImage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -8,6 +9,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.swing.Swing
+import org.jetbrains.exposed.sql.transactions.transaction
 import java.awt.image.BufferedImage
 import java.io.File
 import javax.imageio.ImageIO
@@ -30,8 +32,6 @@ fun startCellOpening(
     if (button.cellState == CellButton.CellState.OPENED)
         return
 
-    player.openCell()
-
     val row = button.row
     val column = button.column
 
@@ -40,37 +40,41 @@ fun startCellOpening(
     if (button.cellState == CellButton.CellState.CLOSED)
         button.cellState = CellButton.CellState.OPENED
 
-    cellsLeftState.update { it - 1 }
+    transaction {
+        println("Open cell (${button.row}; ${button.column}). Total: ${++player.openedCells}")
 
-    if (numberTable[row][column] == 0) {
+        cellsLeftState.update { it - 1 }
 
-        // Breadth First Search
+        if (numberTable[row][column] == 0) {
 
-        zeroes.clear()
-        zeroes.addLast(row to column)
+            // Breadth First Search
 
-        fun open(row: Int, column: Int) = openSingleCellAndAddToZeroes(
-            buttons[row][column],
-            player,
-            zeroes,
-            numberTable,
-            numberImages,
-            cellsLeftState
-        )
+            zeroes.clear()
+            zeroes.addLast(row to column)
 
-        while (zeroes.isNotEmpty()) {
-            zeroes.first().let { (xc2, yc2) ->
-                if (xc2 > 0) open(row = xc2 - 1, column = yc2,)
-                if (xc2 < rows - 1) open(xc2 + 1, yc2)
-                if (yc2 > 0) open(xc2, yc2 - 1)
-                if (yc2 < columns - 1) open(xc2, yc2 + 1)
-                if (xc2 > 0 && yc2 > 0) open(xc2 - 1, yc2 - 1)
-                if (xc2 > 0 && yc2 < columns - 1) open(xc2 - 1, yc2 + 1)
-                if (xc2 < rows - 1 && yc2 > 0) open(xc2 + 1, yc2 - 1)
-                if (xc2 < rows - 1 && yc2 < columns - 1) open(xc2 + 1, yc2 + 1)
+            fun open(row: Int, column: Int) = openSingleCellAndAddToZeroes(
+                buttons[row][column],
+                player,
+                zeroes,
+                numberTable,
+                numberImages,
+                cellsLeftState
+            )
+
+            while (zeroes.isNotEmpty()) {
+                zeroes.first().let { (xc2, yc2) ->
+                    if (xc2 > 0) open(xc2 - 1, yc2)
+                    if (xc2 < rows - 1) open(xc2 + 1, yc2)
+                    if (yc2 > 0) open(xc2, yc2 - 1)
+                    if (yc2 < columns - 1) open(xc2, yc2 + 1)
+                    if (xc2 > 0 && yc2 > 0) open(xc2 - 1, yc2 - 1)
+                    if (xc2 > 0 && yc2 < columns - 1) open(xc2 - 1, yc2 + 1)
+                    if (xc2 < rows - 1 && yc2 > 0) open(xc2 + 1, yc2 - 1)
+                    if (xc2 < rows - 1 && yc2 < columns - 1) open(xc2 + 1, yc2 + 1)
+                }
+
+                zeroes.removeFirst()
             }
-
-            zeroes.removeFirst()
         }
     }
 }
@@ -86,7 +90,7 @@ private fun openSingleCellAndAddToZeroes(
     if (button.cellState != CellButton.CellState.CLOSED)
         return
 
-    player.openCell()
+    println("Open cell (${button.row}; ${button.column}). Total: ${++player.openedCells}")
 
     button.run {
         icon = ImageIcon(numberImages[numberTable[row][column]])

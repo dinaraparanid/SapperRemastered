@@ -15,7 +15,7 @@ fun MainFrame(): JFrame {
 
     return JFrame("SAPPER Remastered").also { frame ->
         frame.defaultCloseOperation = JFrame.EXIT_ON_CLOSE
-        frame.bounds = Rectangle(0, 0, 1920, 1080)
+        frame.bounds = Rectangle(0, 0, 1900, 1000)
 
         frame.iconImage = ImageIcon(
             getScaledImage(

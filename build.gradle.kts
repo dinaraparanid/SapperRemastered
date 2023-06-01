@@ -47,15 +47,21 @@ tasks.withType<KotlinCompile> {
 }
 
 tasks.withType<Jar> {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
     manifest {
-        attributes("Main-Class" to "org.main.MainKt")
+        attributes("Main-Class" to "com.paranid5.MainKt")
     }
 
-    from(configurations.implementation.map { config -> config.map { if (it.isDirectory) it else zipTree(it) } })
+    from(
+        configurations.runtimeClasspath.map { config ->
+            config.map { if (it.isDirectory) it else zipTree(it) }
+        }
+    )
 }
 
 application {
-    mainClass.set("com.paranid5.presentation.main.MainKt")
+    mainClass.set("com.paranid5.MainKt")
 }
 
 val compileKotlin: KotlinCompile by tasks

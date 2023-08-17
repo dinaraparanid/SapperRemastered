@@ -1,9 +1,9 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.20"
-    kotlin("kapt") version "1.8.20"
-    kotlin("plugin.serialization") version "1.8.20"
+    kotlin("jvm") version "1.9.0"
+    kotlin("kapt") version "1.9.0"
+    kotlin("plugin.serialization") version "1.9.0"
     application
 }
 
@@ -17,17 +17,17 @@ apply {
     plugin("kotlin")
 }
 
-group = "com.paranid5"
-version = "V1.1.0"
+group = "com.paranid5.sapper_remastered"
+version = "V1.1.1"
 
 repositories {
     mavenCentral()
 }
 
 dependencies {
-    implementation("org.jetbrains.kotlin:kotlin-reflect:1.8.20")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.1")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.9.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.7.3")
     implementation("org.jetbrains.exposed", "exposed-core", "0.40.1")
     implementation("org.jetbrains.exposed", "exposed-dao", "0.40.1")
     implementation("org.jetbrains.exposed", "exposed-jdbc", "0.40.1")
@@ -50,7 +50,7 @@ tasks.withType<Jar> {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 
     manifest {
-        attributes("Main-Class" to "com.paranid5.MainKt")
+        attributes("Main-Class" to "com.paranid5.sapper_remastered.MainKt")
     }
 
     from(
@@ -61,7 +61,7 @@ tasks.withType<Jar> {
 }
 
 application {
-    mainClass.set("com.paranid5.MainKt")
+    mainClass.set("com.paranid5.sapper_remastered.MainKt")
 }
 
 val compileKotlin: KotlinCompile by tasks
